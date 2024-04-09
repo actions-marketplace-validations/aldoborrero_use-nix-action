@@ -9,7 +9,6 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-    flake-root.url = "github:srid/flake-root";
 
     # utils
     devshell = {
@@ -32,7 +31,6 @@
     flake-parts.lib.mkFlake {inherit inputs;}
     {
       imports = [
-        inputs.flake-root.flakeModule
         inputs.treefmt-nix.flakeModule
         inputs.devshell.flakeModule
       ];
@@ -52,9 +50,9 @@
       }: {
         # Formatting
         treefmt.config = {
-          inherit (config.flake-root) projectRootFile;
-          flakeFormatter = true;
           flakeCheck = true;
+          flakeFormatter = true;
+          projectRootFile = "flake.nix";
           programs = {
             alejandra.enable = true;
             deno.enable = true;
