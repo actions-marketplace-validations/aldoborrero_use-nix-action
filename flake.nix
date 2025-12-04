@@ -9,7 +9,6 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-    flake-root.url = "github:srid/flake-root";
 
     # utils
     devshell = {
@@ -32,44 +31,56 @@
     flake-parts.lib.mkFlake {inherit inputs;}
     {
       imports = [
-        inputs.flake-root.flakeModule
         inputs.treefmt-nix.flakeModule
         inputs.devshell.flakeModule
       ];
 
-      systems = ["x86_64-linux"];
+      systems = [
+        "x86_64-darwin"
+        "x86_64-linux"
+      ];
 
       perSystem = {
-        pkgs,
-        config,
-        lib,
         self',
+        config,
         inputs',
+        lib,
+        pkgs,
         ...
-      }: let
-      in {
+      }: {
+        # Formatting
         treefmt.config = {
-          inherit (config.flake-root) projectRootFile;
-          package = pkgs.treefmt;
-          flakeFormatter = true;
           flakeCheck = true;
+          flakeFormatter = true;
+          projectRootFile = "flake.nix";
           programs = {
             alejandra.enable = true;
-            prettier.enable = true;
+            deno.enable = true;
+            mdformat.enable = true;
+            shellcheck.enable = true;
           };
         };
 
+        # DevShell
         devshells.default = {
           name = "use-nix-action";
           packages = with pkgs; [
-            shellcheck
+            act
+            nodejs_20
           ];
+          env = [];
           commands = [
             {
-              category = "Tools";
+              category = "nix";
               name = "fmt";
               help = "Format the source tree";
               command = "nix fmt";
+            }
+            {
+              category = "nix";
+              name = "check";
+              help = "Check the source code";
+              command = "nix flake check";
             }
           ];
         };
